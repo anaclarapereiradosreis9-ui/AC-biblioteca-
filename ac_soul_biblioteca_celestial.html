@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AC — Biblioteca Celestial & Gestão de Leitura</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            night: '#070b19',
+            panel: 'rgba(13, 19, 37, 0.75)',
+            panelBorder: 'rgba(214, 173, 91, 0.22)',
+            gold: '#d6ad5b',
+            goldLight: '#f2d58e',
+            goldDark: '#9e7930',
+            cosmicText: '#f5f1e8',
+            cosmicMuted: '#9298aa'
+          },
+          fontFamily: {
+            cinzel: ['Cinzel', 'serif'],
+            playfair: ['Playfair Display', 'serif'],
+            sans: ['DM Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070b19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(214, 173, 91, 0.3);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(214, 173, 91, 0.6);
+    }
+
+    /* Background Stars Canvas Layer */
+    body {
+      background-color: #070b19;
+      color: #f5f1e8;
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .glass-card {
+      background: linear-gradient(135deg, rgba(16, 24, 47, 0.85), rgba(8, 12, 27, 0.92));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(214, 173, 91, 0.22);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(242, 213, 142, 0.1);
+    }
+
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(214, 173, 91, 0.5);
+      transform: translateY(-3px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 15px rgba(214, 173, 91, 0.15);
+    }
+
+    .gold-glow-text {
+      text-shadow: 0 0 12px rgba(242, 213, 142, 0.35);
+    }
+
+    .gold-gradient-bg {
+      background: linear-gradient(135deg, #d6ad5b, #f2d58e);
+    }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #f2d58e, #d6ad5b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Star animation */
+    #stars-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body class="min-h-screen relative flex flex-col md:flex-row antialiased selection:bg-gold selection:text-night">
+
+  <!-- Background Canvas for Interactive Stars -->
+  <canvas id="stars-canvas"></canvas>
+
+  <!-- APP CONTAINER -->
+  <div class="relative z-10 flex flex-col md:flex-row w-full min-h-screen">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="sidebar" class="w-full md:w-64 bg-night/90 backdrop-blur-xl border-r border-panelBorder flex flex-col justify-between p-5 md:fixed md:h-screen z-40 transition-transform duration-300">
+      <div>
+        <!-- Brand Header -->
+        <div class="flex items-center gap-3 px-2 py-4 mb-6 border-b border-panelBorder/40">
+          <div class="text-3xl text-goldLight gold-glow-text">☾</div>
+          <div>
+            <h1 class="font-cinzel font-bold text-lg tracking-widest gold-gradient-text">AC SOUL</h1>
+            <p class="text-[10px] tracking-widest text-cosmicMuted uppercase">Biblioteca Celestial</p>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="space-y-1.5" id="navContainer">
+          <button data-page="home" class="nav-btn active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-cosmicMuted hover:text-goldLight hover:bg-gold/10 border border-transparent">
+            <span class="text-gold">✦</span>
+            <span>Meu Soul</span>
+          </button>
+          <button data-page="books" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-cosmicMuted hover:text-goldLight hover:bg-gold/10 border border-transparent">
+            <span>📚</span>
+            <span>Biblioteca</span>
+          </button>
+          <button data-page="intentions" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-cosmicMuted hover:text-goldLight hover:bg-gold/10 border border-transparent">
+            <span class="text-gold">◈</span>
+            <span>Intenções</span>
+          </button>
+          <button data-page="journal" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-cosmicMuted hover:text-goldLight hover:bg-gold/10 border border-transparent">
+            <span class="text-goldLight">☽</span>
+            <span>Diário de Leitura</span>
+          </button>
+          <button data-page="focus" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-cosmicMuted hover:text-goldLight hover:bg-gold/10 border border-transparent">
+            <span class="text-gold">◌</span>
+            <span>Foco na Leitura</span>
+          </button>
+          <button data-page="vision" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-cosmicMuted hover:text-goldLight hover:bg-gold/10 border border-transparent">
+            <span class="text-goldLight">◇</span>
+            <span>Vision Board</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Celestial Quote Footer Note -->
+      <div class="mt-8 p-4 rounded-xl glass-card border-panelBorder/30 text-xs italic font-playfair text-cosmicMuted leading-relaxed">
+        “A leitura expande a mente, ilumina o espírito e desperta universos inteiros.”
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 md:ml-64 flex flex-col min-w-0">
+      
+      <!-- TOPBAR HEADER -->
+      <header class="h-20 border-b border-panelBorder/40 bg-night/60 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6 md:px-10">
+        <div class="flex items-center gap-4">
+          <button id="mobileMenuBtn" class="md:hidden text-goldLight text-2xl focus:outline-none">☰</button>
+          <h2 id="pageTitle" class="font-cinzel text-xl font-semibold tracking-wider text-goldLight">Meu Soul</h2>
+        </div>
+        <div class="flex items-center gap-4">
+          <span id="currentDateStr" class="hidden sm:inline-block text-xs font-sans text-cosmicMuted tracking-wide"></span>
+          <button onclick="app.openBookModal()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-gold/15 text-goldLight border border-gold/40 hover:bg-gold/25 transition-all flex items-center gap-2">
+            <span>+ Novo Livro</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- DYNAMIC CONTENT VIEW CONTAINER -->
+      <div id="appView" class="p-6 md:p-10 max-w-7xl w-full mx-auto space-y-8 flex-1">
+        <!-- Views rendered here dynamically -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL CONTAINER (Generic for Add/Edit Book & Notes) -->
+  <div id="modalBackdrop" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="modalContent" class="glass-card max-w-lg w-full rounded-2xl p-6 md:p-8 max-h-[90vh] overflow-y-auto border-gold/30 relative">
+      <button onclick="app.closeModal()" class="absolute top-4 right-4 text-cosmicMuted hover:text-goldLight text-xl">✕</button>
+      <div id="modalInner"></div>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    // --- CANVAS STARFIELD BACKGROUND ---
+    (function initStars() {
+      const canvas = document.getElementById('stars-canvas');
+      const ctx = canvas.getContext('2d');
+      let stars = [];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        createStars();
+      }
+
+      function createStars() {
+        stars = [];
+        const count = Math.floor((canvas.width * canvas.height) / 7000);
+        for (let i = 0; i < count; i++) {
+          stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 1.8 + 0.2,
+            alpha: Math.random() * 0.8 + 0.2,
+            speed: Math.random() * 0.015 + 0.005
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+          star.alpha += Math.sin(Date.now() * star.speed) * 0.01;
+          star.alpha = Math.max(0.1, Math.min(0.9, star.alpha));
+          ctx.fillStyle = `rgba(242, 213, 142, ${star.alpha})`;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    })();
+
+    // --- AUDIO ATMOSPHERE GENERATOR (Web Audio API) ---
+    const CosmicAudio = {
+      ctx: null,
+      osc1: null,
+      gainNode: null,
+      isPlaying: false,
+
+      toggle() {
+        if (this.isPlaying) {
+          this.stop();
+          return false;
+        } else {
+          this.start();
+          return true;
+        }
+      },
+
+      start() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+
+          // Smooth ambient drone synthesizer
+          this.osc1 = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          this.gainNode = this.ctx.createGain();
+
+          this.osc1.type = 'sine';
+          this.osc1.frequency.setValueAtTime(108, this.ctx.currentTime); // Deep calming frequency A2-ish
+
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(216, this.ctx.currentTime);
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(400, this.ctx.currentTime);
+
+          this.gainNode.gain.setValueAtTime(0.01, this.ctx.currentTime);
+          this.gainNode.gain.exponentialRampToValueAtTime(0.15, this.ctx.currentTime + 3);
+
+          this.osc1.connect(filter);
+          osc2.connect(filter);
+          filter.connect(this.gainNode);
+          this.gainNode.connect(this.ctx.destination);
+
+          this.osc1.start();
+          osc2.start();
+          this.isPlaying = true;
+        } catch(e) {
+          console.error('Audio not supported or blocked', e);
+        }
+      },
+
+      stop() {
+        if (this.gainNode && this.ctx) {
+          this.gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1);
+          setTimeout(() => {
+            if (this.ctx) this.ctx.close();
+            this.isPlaying = false;
+          }, 1000);
+        }
+      }
+    };
+
+    // --- MOCK INITIAL DATA FOR FIRST LOAD ---
+    const initialData = {
+      books: [
+        {
+          id: '1',
+          title: 'O Nome do Vento',
+          author: 'Patrick Rothfuss',
+          category: 'Fantasia Celestial',
+          status: 'reading',
+          totalPages: 656,
+          currentPage: 412,
+          rating: 5,
+          cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80',
+          review: 'Uma obra prima sobre música, magia e memórias.'
+        },
+        {
+          id: '2',
+          title: 'O Poder do Hábito',
+          author: 'Charles Duhigg',
+          category: 'Desenvolvimento',
+          status: 'reading',
+          totalPages: 408,
+          currentPage: 185,
+          rating: 4,
+          cover: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=600&q=80',
+          review: 'Compreender os loops de hábito altera completamente a rotina.'
+        },
+        {
+          id: '3',
+          title: 'A Coragem de Ser Imperfeito',
+          author: 'Brené Brown',
+          category: 'Psicologia',
+          status: 'read',
+          totalPages: 288,
+          currentPage: 288,
+          rating: 5,
+          cover: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
+          review: 'A vulnerabilidade não é fraqueza, é a nossa maior medida de coragem.'
+        },
+        {
+          id: '4',
+          title: 'Duna',
+          author: 'Frank Herbert',
+          category: 'Ficção Científica',
+          status: 'want',
+          totalPages: 680,
+          currentPage: 0,
+          rating: 0,
+          cover: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=80',
+          review: ''
+        }
+      ],
+      journal: [
+        {
+          id: 'j1',
+          bookTitle: 'O Nome do Vento',
+          date: '2026-10-24',
+          tag: 'Citação Reflexiva',
+          content: '“Nós escutamos quando ouvimos uma história. Mas são poucas as pessoas que realmente escutam o silêncio entre as palavras.”'
+        },
+        {
+          id: 'j2',
+          bookTitle: 'O Poder do Hábito',
+          date: '2026-10-26',
+          tag: 'Aprendizado',
+          content: 'Identifique a deixa e a recompensa para modificar qualquer rotina automática durante os estudos e momentos de leitura.'
+        }
+      ],
+      intentions: [
+        { id: 'i1', title: 'Meta Anual de Leitura 2026', target: 24, current: 14, unit: 'livros' },
+        { id: 'i2', title: 'Ritual Diário de Leitura Noturna', target: 30, current: 22, unit: 'minutos/dia' }
+      ],
+      visionBoard: [
+        { id: 'v1', quote: 'Ler é navegar por mares desconhecidos sem sair do lugar.', author: 'Sabedoria Ancestral', image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80' },
+        { id: 'v2', quote: 'Livros são espelhos: você só vê neles o que já tem dentro de si.', author: 'Carlos Ruiz Zafón', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80' }
+      ]
+    };
+
+    // --- MAIN APPLICATION CONTROLLER ---
+    class ACSoulApp {
+      constructor() {
+        this.currentPage = 'home';
+        this.storeKey = 'ac_soul_data_v1';
+        this.data = this.loadStore();
+        
+        // Focus Timer State
+        this.timer = {
+          duration: 25 * 60,
+          remaining: 25 * 60,
+          interval: null,
+          isRunning: false
+        };
+
+        this.initDOM();
+        this.render();
+      }
+
+      loadStore() {
+        const raw = localStorage.getItem(this.storeKey);
+        if (!raw) {
+          localStorage.setItem(this.storeKey, JSON.stringify(initialData));
+          return JSON.parse(JSON.stringify(initialData));
+        }
+        try { return JSON.parse(raw); } catch(e) { return initialData; }
+      }
+
+      saveStore() {
+        localStorage.setItem(this.storeKey, JSON.stringify(this.data));
+      }
+
+      initDOM() {
+        // Date strings
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDateStr').textContent = new Date().toLocaleDateString('pt-BR', options);
+
+        // Sidebar Navigation click listeners
+        document.querySelectorAll('#navContainer .nav-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const targetPage = btn.getAttribute('data-page');
+            this.navigate(targetPage);
+          });
+        });
+
+        // Mobile drawer menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+          const sidebar = document.getElementById('sidebar');
+          sidebar.classList.toggle('-translate-x-full');
+        });
+      }
+
+      navigate(pageId) {
+        this.currentPage = pageId;
+
+        // Active style navigation buttons
+        document.querySelectorAll('#navContainer .nav-btn').forEach(btn => {
+          if (btn.getAttribute('data-page') === pageId) {
+            btn.classList.add('bg-gold/15', 'text-goldLight', 'border-gold/30');
+            btn.classList.remove('text-cosmicMuted', 'border-transparent');
+          } else {
+            btn.classList.remove('bg-gold/15', 'text-goldLight', 'border-gold/30');
+            btn.classList.add('text-cosmicMuted', 'border-transparent');
+          }
+        });
+
+        // Update top title
+        const titles = {
+          home: '✦ Meu Soul',
+          books: '📚 Biblioteca Celestial',
+          intentions: '◈ Intenções de Leitura',
+          journal: '☽ Diário de Leitura',
+          focus: '◌ Foco na Leitura',
+          vision: '◇ Vision Board'
+        };
+        document.getElementById('pageTitle').textContent = titles[pageId] || 'AC Soul';
+
+        this.render();
+      }
+
+      render() {
+        const container = document.getElementById('appView');
+        switch(this.currentPage) {
+          case 'home': container.innerHTML = this.renderHomeView(); break;
+          case 'books': container.innerHTML = this.renderBooksView(); break;
+          case 'intentions': container.innerHTML = this.renderIntentionsView(); break;
+          case 'journal': container.innerHTML = this.renderJournalView(); break;
+          case 'focus': container.innerHTML = this.renderFocusView(); break;
+          case 'vision': container.innerHTML = this.renderVisionView(); break;
+          default: container.innerHTML = this.renderHomeView();
+        }
+      }
+
+      // --- HOME VIEW ---
+      renderHomeView() {
+        const books = this.data.books || [];
+        const currentlyReading = books.filter(b => b.status === 'reading');
+        const completedCount = books.filter(b => b.status === 'read').length;
+        const totalPagesRead = books.reduce((acc, b) => acc + Number(b.currentPage || 0), 0);
+
+        return `
+          <div class="space-y-8 animate-fade-in">
+            
+            <!-- Hero Welcome Card -->
+            <div class="glass-card rounded-2xl p-8 relative overflow-hidden border-gold/30">
+              <div class="absolute -right-10 -bottom-10 text-9xl opacity-5 text-goldLight font-cinzel select-none">✦</div>
+              <div class="max-w-2xl relative z-10 space-y-3">
+                <span class="text-xs uppercase tracking-widest text-gold font-semibold">Boas-vindas ao seu templo literário</span>
+                <h2 class="text-3xl md:text-4xl font-playfair font-semibold text-cosmicText">Cultive o hábito da leitura sob as estrelas.</h2>
+                <p class="text-sm text-cosmicMuted leading-relaxed">Acompanhe seu progresso, anote seus insights celestiais e mantenha seu ritual diário de leitura organizado em um só lugar.</p>
+              </div>
+            </div>
+
+            <!-- Stats Overview Row -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="glass-card rounded-xl p-5 border-panelBorder">
+                <span class="text-xs text-cosmicMuted">Total no Acervo</span>
+                <div class="text-3xl font-playfair font-bold text-goldLight mt-1">${books.length}</div>
+              </div>
+              <div class="glass-card rounded-xl p-5 border-panelBorder">
+                <span class="text-xs text-cosmicMuted">Lendo Agora</span>
+                <div class="text-3xl font-playfair font-bold text-goldLight mt-1">${currentlyReading.length}</div>
+              </div>
+              <div class="glass-card rounded-xl p-5 border-panelBorder">
+                <span class="text-xs text-cosmicMuted">Livros Concluídos</span>
+                <div class="text-3xl font-playfair font-bold text-goldLight mt-1">${completedCount}</div>
+              </div>
+              <div class="glass-card rounded-xl p-5 border-panelBorder">
+                <span class="text-xs text-cosmicMuted">Páginas Lidas</span>
+                <div class="text-3xl font-playfair font-bold text-goldLight mt-1">${totalPagesRead.toLocaleString()}</div>
+              </div>
+            </div>
+
+            <!-- Currently Reading Spotlight Section -->
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <h3 class="font-cinzel text-xl font-semibold text-goldLight">📖 Leitura Ativa em Destaque</h3>
+                <button onclick="app.navigate('books')" class="text-xs text-gold hover:underline">Ver Biblioteca Completa →</button>
+              </div>
+
+              ${currentlyReading.length === 0 ? `
+                <div class="glass-card rounded-xl p-8 text-center text-cosmicMuted text-sm">
+                  Nenhum livro sendo lido no momento. Escolha um livro na biblioteca para iniciar!
+                </div>
+              ` : `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  ${currentlyReading.map(book => this.renderBookCardHTML(book)).join('')}
+                </div>
+              `}
+            </div>
+
+            <!-- Recent Journal Entries & Inspiration -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="lg:col-span-2 space-y-4">
+                <h3 class="font-cinzel text-xl font-semibold text-goldLight">☽ Últimas Reflexões no Diário</h3>
+                <div class="space-y-3">
+                  ${(this.data.journal || []).slice(0, 2).map(entry => `
+                    <div class="glass-card rounded-xl p-5 border-panelBorder space-y-2">
+                      <div class="flex justify-between text-xs text-cosmicMuted">
+                        <span class="text-gold font-medium">${this.escapeHTML(entry.bookTitle)}</span>
+                        <span>${entry.date}</span>
+                      </div>
+                      <p class="text-sm italic font-playfair text-cosmicText">"${this.escapeHTML(entry.content)}"</p>
+                      <span class="inline-block text-[10px] uppercase px-2 py-0.5 rounded-md bg-gold/10 text-gold border border-gold/20">${this.escapeHTML(entry.tag)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Focus Quick Launcher Card -->
+              <div class="glass-card rounded-xl p-6 flex flex-col justify-between border-gold/30">
+                <div class="space-y-3">
+                  <span class="text-xs font-semibold text-gold uppercase tracking-wider">Ritual de Concentração</span>
+                  <h4 class="font-playfair text-xl font-semibold text-cosmicText">Iniciar Leitura Focada</h4>
+                  <p class="text-xs text-cosmicMuted">Ative o cronômetro celestial Pomodoro e ambiente sonoro para focar sem distrações.</p>
+                </div>
+                <button onclick="app.navigate('focus')" class="mt-6 w-full py-3 rounded-xl gold-gradient-bg text-night font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity">
+                  Ir para Cronômetro ◌
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }
+
+      // --- BOOKS VIEW ---
+      renderBooksView() {
+        const books = this.data.books || [];
+        return `
+          <div class="space-y-6">
+            <!-- Filter Bar & Actions -->
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-center glass-card p-4 rounded-xl border-panelBorder">
+              <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
+                <button onclick="app.filterBooks('all')" id="btn-filter-all" class="book-filter-btn px-4 py-2 rounded-lg text-xs font-medium bg-gold/20 text-goldLight border border-gold/30">Todos (${books.length})</button>
+                <button onclick="app.filterBooks('reading')" id="btn-filter-reading" class="book-filter-btn px-4 py-2 rounded-lg text-xs font-medium text-cosmicMuted hover:text-goldLight border border-transparent">Lendo (${books.filter(b=>b.status==='reading').length})</button>
+                <button onclick="app.filterBooks('want')" id="btn-filter-want" class="book-filter-btn px-4 py-2 rounded-lg text-xs font-medium text-cosmicMuted hover:text-goldLight border border-transparent">Quero Ler (${books.filter(b=>b.status==='want').length})</button>
+                <button onclick="app.filterBooks('read')" id="btn-filter-read" class="book-filter-btn px-4 py-2 rounded-lg text-xs font-medium text-cosmicMuted hover:text-goldLight border border-transparent">Concluídos (${books.filter(b=>b.status==='read').length})</button>
+              </div>
+
+              <div class="flex items-center gap-3 w-full md:w-auto">
+                <input type="text" id="bookSearchInput" oninput="app.searchBooks(this.value)" placeholder="Buscar por título ou autor..." class="w-full md:w-64 bg-night/80 border border-panelBorder rounded-xl px-4 py-2 text-xs text-cosmicText focus:outline-none focus:border-gold">
+                <button onclick="app.openBookModal()" class="px-4 py-2 text-xs font-bold rounded-xl gold-gradient-bg text-night whitespace-nowrap">+ Adicionar</button>
+              </div>
+            </div>
+
+            <!-- Books Grid -->
+            <div id="booksGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              ${books.map(b => this.renderBookCardHTML(b)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      filterBooks(status) {
+        document.querySelectorAll('.book-filter-btn').forEach(b => {
+          b.classList.remove('bg-gold/20', 'text-goldLight', 'border-gold/30');
+          b.classList.add('text-cosmicMuted', 'border-transparent');
+        });
+        const activeBtn = document.getElementById(`btn-filter-${status}`);
+        if(activeBtn) activeBtn.classList.add('bg-gold/20', 'text-goldLight', 'border-gold/30');
+
+        const books = this.data.books || [];
+        const filtered = status === 'all' ? books : books.filter(b => b.status === status);
+        document.getElementById('booksGridContainer').innerHTML = filtered.map(b => this.renderBookCardHTML(b)).join('');
+      }
+
+      searchBooks(query) {
+        const q = query.toLowerCase();
+        const books = this.data.books || [];
+        const filtered = books.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
+        document.getElementById('booksGridContainer').innerHTML = filtered.map(b => this.renderBookCardHTML(b)).join('');
+      }
+
+      renderBookCardHTML(book) {
+        const progress = book.totalPages ? Math.min(100, Math.round((book.currentPage / book.totalPages) * 100)) : 0;
+        const stars = '★'.repeat(book.rating || 0) + '☆'.repeat(5 - (book.rating || 0));
+
+        return `
+          <div class="glass-card glass-card-hover rounded-2xl p-5 flex gap-5 relative group border-panelBorder">
+            
+            <!-- Book Cover -->
+            <div class="w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden border border-panelBorder/50 bg-night/80 shadow-md relative">
+              ${book.cover ? `
+                <img src="${this.escapeHTML(book.cover)}" alt="${this.escapeHTML(book.title)}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=600&q=80'">
+              ` : `
+                <div class="w-full h-full flex items-center justify-center text-3xl text-gold/40 font-cinzel">📖</div>
+              `}
+            </div>
+
+            <!-- Details -->
+            <div class="flex-1 flex flex-col justify-between min-w-0">
+              <div>
+                <div class="flex justify-between items-start gap-2">
+                  <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-md bg-gold/10 text-gold border border-gold/20">${this.escapeHTML(book.category || 'Geral')}</span>
+                  <div class="flex gap-1">
+                    <button onclick="app.openBookModal('${book.id}')" class="text-cosmicMuted hover:text-gold text-xs">✏️</button>
+                    <button onclick="app.deleteBook('${book.id}')" class="text-cosmicMuted hover:text-red-400 text-xs">🗑️</button>
+                  </div>
+                </div>
+
+                <h4 class="font-playfair font-semibold text-base text-cosmicText truncate mt-1.5">${this.escapeHTML(book.title)}</h4>
+                <p class="text-xs text-cosmicMuted truncate">${this.escapeHTML(book.author)}</p>
+                <div class="text-xs text-goldLight mt-1">${stars}</div>
+              </div>
+
+              <!-- Reading Progress Bar -->
+              <div class="space-y-1.5 mt-3">
+                <div class="flex justify-between text-[11px] text-cosmicMuted">
+                  <span>Pág: <strong class="text-goldLight">${book.currentPage}</strong> / ${book.totalPages}</span>
+                  <span>${progress}%</span>
+                </div>
+                <div class="w-full h-1.5 bg-night rounded-full overflow-hidden border border-panelBorder/40">
+                  <div class="h-full gold-gradient-bg transition-all duration-500 rounded-full" style="width: ${progress}%"></div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                  <button onclick="app.updatePagesModal('${book.id}')" class="w-full py-1.5 rounded-lg text-xs font-semibold bg-gold/10 hover:bg-gold/20 text-goldLight border border-gold/30 transition-all">
+                    + Atualizar Pág.
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }
+
+      // --- INTENTIONS VIEW ---
+      renderIntentionsView() {
+        const intentions = this.data.intentions || [];
+        return `
+          <div class="space-y-6 max-w-4xl mx-auto">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-cinzel text-xl font-semibold text-goldLight">◈ Intenções & Metas de Leitura</h3>
+                <p class="text-xs text-cosmicMuted">Estabeleça propósitos para a sua jornada de conhecimento.</p>
+              </div>
+              <button onclick="app.openIntentionModal()" class="px-4 py-2 text-xs font-bold rounded-xl gold-gradient-bg text-night">+ Nova Meta</button>
+            </div>
+
+            <div class="space-y-4">
+              ${intentions.map(item => {
+                const pct = Math.min(100, Math.round((item.current / item.target) * 100));
+                return `
+                  <div class="glass-card rounded-xl p-6 border-panelBorder space-y-3">
+                    <div class="flex justify-between items-center">
+                      <h4 class="font-playfair text-lg text-cosmicText font-semibold">${this.escapeHTML(item.title)}</h4>
+                      <div class="flex items-center gap-3">
+                        <span class="text-xs text-gold font-bold">${item.current} / ${item.target} ${this.escapeHTML(item.unit)}</span>
+                        <button onclick="app.incrementIntention('${item.id}')" class="px-3 py-1 bg-gold/20 text-goldLight rounded-lg text-xs hover:bg-gold/30">+ Log</button>
+                      </div>
+                    </div>
+                    <div class="w-full h-2 bg-night rounded-full overflow-hidden border border-panelBorder">
+                      <div class="h-full gold-gradient-bg transition-all duration-500" style="width: ${pct}%"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // --- JOURNAL VIEW ---
+      renderJournalView() {
+        const entries = this.data.journal || [];
+        return `
+          <div class="space-y-6 max-w-4xl mx-auto">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-cinzel text-xl font-semibold text-goldLight">☽ Diário de Leitura & Reflexões</h3>
+                <p class="text-xs text-cosmicMuted">Guarde passagens marcantes, citações e resumos.</p>
+              </div>
+              <button onclick="app.openJournalModal()" class="px-4 py-2 text-xs font-bold rounded-xl gold-gradient-bg text-night">+ Nova Nota</button>
+            </div>
+
+            <div class="space-y-4">
+              ${entries.map(e => `
+                <div class="glass-card rounded-2xl p-6 border-panelBorder space-y-3 relative group">
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="font-semibold text-gold font-playfair text-base">${this.escapeHTML(e.bookTitle)}</span>
+                    <div class="flex items-center gap-3">
+                      <span class="text-cosmicMuted">${e.date}</span>
+                      <button onclick="app.deleteJournal('${e.id}')" class="text-cosmicMuted hover:text-red-400">🗑️</button>
+                    </div>
+                  </div>
+                  <p class="text-sm font-sans text-cosmicText leading-relaxed">${this.escapeHTML(e.content)}</p>
+                  <span class="inline-block text-[10px] uppercase font-semibold px-2.5 py-1 rounded-md bg-gold/10 text-goldLight border border-gold/20">${this.escapeHTML(e.tag)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // --- FOCUS TIMER VIEW ---
+      renderFocusView() {
+        const mins = Math.floor(this.timer.remaining / 60);
+        const secs = this.timer.remaining % 60;
+        const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        return `
+          <div class="max-w-xl mx-auto space-y-8 text-center animate-fade-in">
+            <div class="space-y-2">
+              <h3 class="font-cinzel text-2xl font-bold text-goldLight">◌ Foco na Leitura</h3>
+              <p class="text-xs text-cosmicMuted">Sessão Pomodoro Celestial & Frequência Sonora</p>
+            </div>
+
+            <!-- Big Circular Timer Display -->
+            <div class="glass-card rounded-full w-72 h-72 mx-auto flex flex-col items-center justify-center border-gold/40 shadow-2xl relative">
+              <div class="text-5xl font-playfair font-bold text-goldLight tracking-widest gold-glow-text">${timeStr}</div>
+              <span class="text-xs text-cosmicMuted uppercase tracking-widest mt-2">${this.timer.isRunning ? 'Em Leitura...' : 'Pausado'}</span>
+            </div>
+
+            <!-- Preset Buttons -->
+            <div class="flex justify-center gap-3">
+              <button onclick="app.setTimerPreset(15)" class="px-4 py-2 rounded-xl text-xs font-medium bg-gold/10 text-goldLight border border-gold/30 hover:bg-gold/20">15 min</button>
+              <button onclick="app.setTimerPreset(25)" class="px-4 py-2 rounded-xl text-xs font-medium bg-gold/10 text-goldLight border border-gold/30 hover:bg-gold/20">25 min</button>
+              <button onclick="app.setTimerPreset(45)" class="px-4 py-2 rounded-xl text-xs font-medium bg-gold/10 text-goldLight border border-gold/30 hover:bg-gold/20">45 min</button>
+            </div>
+
+            <!-- Timer Controls -->
+            <div class="flex justify-center gap-4">
+              <button onclick="app.toggleTimer()" class="px-8 py-3 rounded-xl gold-gradient-bg text-night font-bold text-xs uppercase tracking-wider hover:opacity-90">
+                ${this.timer.isRunning ? 'Pausar' : 'Iniciar Sessão'}
+              </button>
+              <button onclick="app.resetTimer()" class="px-6 py-3 rounded-xl bg-night border border-panelBorder text-cosmicMuted text-xs font-semibold hover:text-cosmicText">
+                Resetar
+              </button>
+            </div>
+
+            <!-- Ambient Sound Toggle -->
+            <div class="glass-card rounded-xl p-4 flex items-center justify-between border-panelBorder text-left">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl text-gold">🎧</span>
+                <div>
+                  <h5 class="text-xs font-bold text-cosmicText">Sintetizador Sonoro Celestial</h5>
+                  <p class="text-[11px] text-cosmicMuted">Onda senoidal relaxante de 108Hz para foco profundo</p>
+                </div>
+              </div>
+              <button onclick="app.toggleAmbientAudio()" id="audioToggleBtn" class="px-4 py-2 rounded-lg text-xs font-bold bg-gold/20 text-goldLight border border-gold/40">
+                ${CosmicAudio.isPlaying ? 'Desligar Áudio' : 'Ligar Áudio'}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      setTimerPreset(minutes) {
+        this.resetTimer();
+        this.timer.duration = minutes * 60;
+        this.timer.remaining = minutes * 60;
+        this.render();
+      }
+
+      toggleTimer() {
+        if (this.timer.isRunning) {
+          clearInterval(this.timer.interval);
+          this.timer.isRunning = false;
+        } else {
+          this.timer.isRunning = true;
+          this.timer.interval = setInterval(() => {
+            if (this.timer.remaining > 0) {
+              this.timer.remaining--;
+              this.render();
+            } else {
+              clearInterval(this.timer.interval);
+              this.timer.isRunning = false;
+              alert('Sessão de leitura concluída! Parabéns pelo foco celestial.');
+              this.render();
+            }
+          }, 1000);
+        }
+        this.render();
+      }
+
+      resetTimer() {
+        clearInterval(this.timer.interval);
+        this.timer.isRunning = false;
+        this.timer.remaining = this.timer.duration;
+        this.render();
+      }
+
+      toggleAmbientAudio() {
+        const playing = CosmicAudio.toggle();
+        const btn = document.getElementById('audioToggleBtn');
+        if (btn) btn.textContent = playing ? 'Desligar Áudio' : 'Ligar Áudio';
+      }
+
+      // --- VISION BOARD VIEW ---
+      renderVisionView() {
+        const board = this.data.visionBoard || [];
+        return `
+          <div class="space-y-6">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-cinzel text-xl font-semibold text-goldLight">◇ Vision Board Literário</h3>
+                <p class="text-xs text-cosmicMuted">Inspirações estéticas e mentais para amantes da leitura.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ${board.map(item => `
+                <div class="glass-card rounded-2xl overflow-hidden border-panelBorder flex flex-col justify-between min-h-[220px] relative group p-6">
+                  <div class="absolute inset-0 z-0 opacity-20 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('${this.escapeHTML(item.image)}')"></div>
+                  <div class="relative z-10 space-y-4">
+                    <p class="font-playfair text-xl italic text-goldLight leading-relaxed">"${this.escapeHTML(item.quote)}"</p>
+                  </div>
+                  <div class="relative z-10 text-xs text-cosmicMuted text-right font-cinzel">
+                    — ${this.escapeHTML(item.author)}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // --- MODAL UTILITIES ---
+      openModal(html) {
+        document.getElementById('modalInner').innerHTML = html;
+        document.getElementById('modalBackdrop').classList.remove('hidden');
+      }
+
+      closeModal() {
+        document.getElementById('modalBackdrop').classList.add('hidden');
+      }
+
+      openBookModal(bookId = null) {
+        const book = bookId ? this.data.books.find(b => b.id === bookId) : {
+          title: '', author: '', category: 'Geral', status: 'reading', totalPages: 300, currentPage: 0, rating: 5, cover: ''
+        };
+
+        const html = `
+          <h3 class="font-cinzel text-xl font-semibold text-goldLight mb-4">${bookId ? 'Editar Livro' : 'Adicionar Novo Livro'}</h3>
+          <form onsubmit="app.saveBook(event, '${bookId || ''}')" class="space-y-4 text-xs">
+            <div>
+              <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Título</label>
+              <input type="text" id="mTitle" value="${this.escapeHTML(book.title)}" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Autor</label>
+                <input type="text" id="mAuthor" value="${this.escapeHTML(book.author)}" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+              </div>
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Categoria</label>
+                <input type="text" id="mCategory" value="${this.escapeHTML(book.category)}" class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Status</label>
+                <select id="mStatus" class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+                  <option value="reading" ${book.status==='reading'?'selected':''}>Lendo</option>
+                  <option value="want" ${book.status==='want'?'selected':''}>Quero Ler</option>
+                  <option value="read" ${book.status==='read'?'selected':''}>Concluído</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Avaliação (1 a 5)</label>
+                <input type="number" id="mRating" min="0" max="5" value="${book.rating || 5}" class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Total Páginas</label>
+                <input type="number" id="mTotalPages" value="${book.totalPages}" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+              </div>
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Página Atual</label>
+                <input type="number" id="mCurrentPage" value="${book.currentPage}" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+              </div>
+            </div>
+            <div>
+              <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">URL da Capa (Opcional)</label>
+              <input type="url" id="mCover" value="${this.escapeHTML(book.cover || '')}" placeholder="https://..." class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+            </div>
+            <button type="submit" class="w-full py-3 mt-2 rounded-xl gold-gradient-bg text-night font-bold uppercase tracking-wider">Salvar no Acervo</button>
+          </form>
+        `;
+        this.openModal(html);
+      }
+
+      saveBook(e, bookId) {
+        e.preventDefault();
+        const newBook = {
+          id: bookId || String(Date.now()),
+          title: document.getElementById('mTitle').value,
+          author: document.getElementById('mAuthor').value,
+          category: document.getElementById('mCategory').value,
+          status: document.getElementById('mStatus').value,
+          rating: Number(document.getElementById('mRating').value),
+          totalPages: Number(document.getElementById('mTotalPages').value),
+          currentPage: Number(document.getElementById('mCurrentPage').value),
+          cover: document.getElementById('mCover').value
+        };
+
+        if (bookId) {
+          const idx = this.data.books.findIndex(b => b.id === bookId);
+          if (idx !== -1) this.data.books[idx] = newBook;
+        } else {
+          this.data.books.unshift(newBook);
+        }
+
+        this.saveStore();
+        this.closeModal();
+        this.render();
+      }
+
+      updatePagesModal(bookId) {
+        const book = this.data.books.find(b => b.id === bookId);
+        if (!book) return;
+
+        const html = `
+          <h3 class="font-cinzel text-lg font-semibold text-goldLight mb-3">Progresso: ${this.escapeHTML(book.title)}</h3>
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Página Atual (de ${book.totalPages})</label>
+              <input type="number" id="mQuickPages" value="${book.currentPage}" max="${book.totalPages}" class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+            </div>
+            <button onclick="app.saveQuickPages('${book.id}')" class="w-full py-3 rounded-xl gold-gradient-bg text-night font-bold uppercase tracking-wider">Atualizar Páginas</button>
+          </div>
+        `;
+        this.openModal(html);
+      }
+
+      saveQuickPages(bookId) {
+        const val = Number(document.getElementById('mQuickPages').value);
+        const book = this.data.books.find(b => b.id === bookId);
+        if (book) {
+          book.currentPage = val;
+          if (book.currentPage >= book.totalPages) {
+            book.status = 'read';
+          }
+          this.saveStore();
+          this.closeModal();
+          this.render();
+        }
+      }
+
+      deleteBook(bookId) {
+        if (confirm('Deseja remover este livro do acervo?')) {
+          this.data.books = this.data.books.filter(b => b.id !== bookId);
+          this.saveStore();
+          this.render();
+        }
+      }
+
+      openJournalModal() {
+        const books = this.data.books || [];
+        const html = `
+          <h3 class="font-cinzel text-xl font-semibold text-goldLight mb-4">Nova Reflexão no Diário</h3>
+          <form onsubmit="app.saveJournal(event)" class="space-y-4 text-xs">
+            <div>
+              <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Livro</label>
+              <select id="jBook" class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+                ${books.map(b => `<option value="${this.escapeHTML(b.title)}">${this.escapeHTML(b.title)}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Tag / Categoria</label>
+              <input type="text" id="jTag" placeholder="Ex.: Citação, Aprendizado..." required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+            </div>
+            <div>
+              <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Conteúdo da Anotação</label>
+              <textarea id="jContent" rows="4" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold"></textarea>
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl gold-gradient-bg text-night font-bold uppercase tracking-wider">Salvar no Diário</button>
+          </form>
+        `;
+        this.openModal(html);
+      }
+
+      saveJournal(e) {
+        e.preventDefault();
+        const entry = {
+          id: 'j' + Date.now(),
+          bookTitle: document.getElementById('jBook').value,
+          tag: document.getElementById('jTag').value,
+          content: document.getElementById('jContent').value,
+          date: new Date().toISOString().split('T')[0]
+        };
+        this.data.journal.unshift(entry);
+        this.saveStore();
+        this.closeModal();
+        this.render();
+      }
+
+      deleteJournal(id) {
+        this.data.journal = this.data.journal.filter(j => j.id !== id);
+        this.saveStore();
+        this.render();
+      }
+
+      openIntentionModal() {
+        const html = `
+          <h3 class="font-cinzel text-xl font-semibold text-goldLight mb-4">Nova Meta de Leitura</h3>
+          <form onsubmit="app.saveIntention(event)" class="space-y-4 text-xs">
+            <div>
+              <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Título da Meta</label>
+              <input type="text" id="iTitle" placeholder="Ex.: Ler 20 Livros no Ano" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Objetivo (Target)</label>
+                <input type="number" id="iTarget" value="12" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+              </div>
+              <div>
+                <label class="block text-cosmicMuted mb-1 uppercase tracking-wider">Unidade</label>
+                <input type="text" id="iUnit" value="livros" required class="w-full bg-night border border-panelBorder rounded-xl p-3 text-cosmicText focus:border-gold">
+              </div>
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl gold-gradient-bg text-night font-bold uppercase tracking-wider">Criar Meta</button>
+          </form>
+        `;
+        this.openModal(html);
+      }
+
+      saveIntention(e) {
+        e.preventDefault();
+        const item = {
+          id: 'i' + Date.now(),
+          title: document.getElementById('iTitle').value,
+          target: Number(document.getElementById('iTarget').value),
+          current: 0,
+          unit: document.getElementById('iUnit').value
+        };
+        this.data.intentions.push(item);
+        this.saveStore();
+        this.closeModal();
+        this.render();
+      }
+
+      incrementIntention(id) {
+        const item = this.data.intentions.find(i => i.id === id);
+        if (item && item.current < item.target) {
+          item.current++;
+          this.saveStore();
+          this.render();
+        }
+      }
+
+      escapeHTML(str) {
+        return String(str ?? '').replace(/[&<>"']/g, c => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+      }
+    }
+
+    // Initialize application on page load
+    let app;
+    window.addEventListener('DOMContentLoaded', () => {
+      app = new ACSoulApp();
+    });
+  </script>
+</body>
+</html>
